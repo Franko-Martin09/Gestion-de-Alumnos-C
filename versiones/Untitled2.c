@@ -12,6 +12,7 @@ struct datos{
 void cargarAlumno(struct datos alumno[], float *max);
 void mostrarAlumno(struct datos alumno[], float max);
 float calcularPromedio(struct datos alumno[]);
+void buscarLegajo(struct datos alumno[]);
 
 int main(){
     struct datos alumno[CANT];
@@ -20,11 +21,12 @@ int main(){
     float max = 0;
     int mostrar;
 
-    while(op != 3){
+    while(op != 4){
         printf("\nMenu gestion de notas");
         printf("\n1. Ingresar alumnos");
         printf("\n2. Mostrar registros");
-        printf("\n3. Salir\n");
+        printf("\n3. Buscar alumno por legajo");
+        printf("\n4. Salir\n");
         scanf("%d", &op);
 
         switch(op){
@@ -51,6 +53,10 @@ int main(){
                     system("cls");
                 }
                 break;
+            case 3:
+                if(valido){
+                    buscarLegajo(alumno);
+                }
         }
     }
 
@@ -90,7 +96,7 @@ void mostrarAlumno(struct datos alumno[], float max){
         if(alumno[i].nota >= 6){
             printf("\nEstado: APROBADO");
         } else {
-            printf("\nEstado: DESAPROBADO");
+            printf("\nEstado: DESAPROBADO\n");
         }
 
         if(alumno[i].nota == max){
@@ -106,4 +112,29 @@ float calcularPromedio(struct datos alumno []){//aclaracion: Promedio del curso,
         suma += alumno[i].nota;
     }
     printf("\nPromedio del curso: %.2f", suma/3);
+}
+void buscarLegajo(struct datos alumno[]){
+    int encontrado =0;
+    int comparacion=0;
+
+    printf("\n===BUSQUEDA POR LEGAJO(alumnos)===");
+    printf("\nIngrese legajo del alumno: ");
+    scanf("%d",&comparacion);
+
+    for(int i = 0; i < CANT; i++){
+        if(alumno[i].legajo == comparacion){
+            encontrado = 1;
+
+                printf("\nBusqueda finalizada: ");
+                printf("\n\nAlumno %d", i + 1);
+                printf("\nLegajo: %d", alumno[i].legajo);
+                printf("\nNombre: %s", alumno[i].nombre);
+                printf("\nNota: %.2f", alumno[i].nota);
+         }
+    }
+    if(!encontrado){
+       printf("\n<No se encontraron coincidencias>");
+    }
+    system("pause");
+    system("cls");
 }
