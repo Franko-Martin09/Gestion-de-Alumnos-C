@@ -56,6 +56,10 @@ int main(){
             case 3:
                 if(valido){
                     buscarLegajo(alumno);
+                }else {
+                    printf("\nPrimero cargue alumnos\n");
+                    system("pause");
+                    system("cls");
                 }
         }
     }
@@ -114,27 +118,35 @@ float calcularPromedio(struct datos alumno []){//aclaracion: Promedio del curso,
     printf("\nPromedio del curso: %.2f", suma/3);
 }
 void buscarLegajo(struct datos alumno[]){
-    int encontrado =0;
+
     int comparacion=0;
+    int busqueda=0;
+    while(busqueda !=2){
+        int encontrado =0;
+        printf("\n===BUSQUEDA POR LEGAJO(alumnos)===");
+        printf("\nIngrese legajo del alumno: ");
+        scanf("%d",&comparacion);
 
-    printf("\n===BUSQUEDA POR LEGAJO(alumnos)===");
-    printf("\nIngrese legajo del alumno: ");
-    scanf("%d",&comparacion);
+        for(int i = 0; i < CANT; i++){
+            if(alumno[i].legajo == comparacion){
+                encontrado = 1;
 
-    for(int i = 0; i < CANT; i++){
-        if(alumno[i].legajo == comparacion){
-            encontrado = 1;
-
-                printf("\nBusqueda finalizada: ");
-                printf("\n\nAlumno %d", i + 1);
-                printf("\nLegajo: %d", alumno[i].legajo);
-                printf("\nNombre: %s", alumno[i].nombre);
-                printf("\nNota: %.2f", alumno[i].nota);
-         }
+                    printf("\nBusqueda finalizada: ");
+                    printf("\n\nAlumno %d", i + 1);
+                    printf("\nLegajo: %d", alumno[i].legajo);
+                    printf("\nNombre: %s", alumno[i].nombre);
+                    printf("\nNota: %.2f", alumno[i].nota);
+                    break;
+             }
+        }
+        if(!encontrado){
+           printf("\n<No se encontraron coincidencias>");
+        }
+        printf("\nDesea realizar otra busqueda? <1.si> <2.no>");
+        scanf("%d",&busqueda);
     }
-    if(!encontrado){
-       printf("\n<No se encontraron coincidencias>");
-    }
-    system("pause");
-    system("cls");
+
+        system("cls");
 }
+//Version 2.0 Gestion de alumnos
+///--- by FRANCOApps 20-01-2026 ---
