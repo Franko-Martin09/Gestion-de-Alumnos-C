@@ -16,11 +16,13 @@ struct datos
 
 int menu (int ingreso );//menu del programa
 void cargarDatos( struct datos *alumno, int cantidad);//guarda los datos en el struct alumno
+void cargarNotas(struct datos *alumno);
 
 int main (){ //MAIN PRINCIPAL
     struct datos *alumno =NULL; //puntero a struct
     int cantidad= 0;
     int op=0;
+    int valido = 0;
 
     printf("\t___GESTION DE ALUMNOS___\n\t     <Bienvenido>\n");
     do //Menu:
@@ -49,6 +51,12 @@ int main (){ //MAIN PRINCIPAL
                     return 1;
                 }
                 cargarDatos(alumno,cantidad);//1ra opcion carga de datos
+                valido = 1;
+            break;
+        case 2:
+            if(valido){
+                //mostrarAlumno()
+            }
             break;
 
         }
@@ -62,6 +70,8 @@ return 0;
 void cargarDatos(struct datos *alumno, int cantidad)
 {
     system("cls");
+    int agregar = 0;
+    float prom = 0;
 
     for(int i=0; i<cantidad; i++)
     {
@@ -70,11 +80,38 @@ void cargarDatos(struct datos *alumno, int cantidad)
         scanf("%s",alumno[i].nombre);
         printf("curso:");
         scanf("%s",alumno[i].curso);
+
+        printf("\nDesea cargar las notas del alumno ahora? \n1.si\n 2.cargar despues");
+        scanf("%d",&agregar);
+
+        if(agregar == 1){
+             cargarNotas(&alumno[i]);
+        }
     }
     system("pause");
     system("cls");
 
 };
+void cargarNotas(struct datos *alumno){
+        float prom;
+        printf("Nota 1:  ");
+        scanf("%f", &alumno->nota1);
+
+        printf("Nota 2:  ");
+        scanf("%f", &alumno->nota2);
+
+        printf("Nota 3:  ");
+        scanf("%f", &alumno->nota3);
+
+        prom = (alumno->nota1 + alumno->nota2 + alumno->nota3) / 3;
+        alumno->promedio =prom;
+        if(alumno->promedio > 6.50){
+            alumno->estado = 1;//si estado vale 1 significa que aprueba
+        }else {
+            alumno->estado = 0;
+        }
+
+}
 /*(25-01-26) NT: agregar una opcion que permita preguntar a que escuela quiere guardar
     el alumno.ej naciones, n·38 etc y guarde esos datos enla escuela... agregar una opcion que
     permita tambien "mover"esos datos de una escuela a otra y permita eliminarlo de su anterior escuela
