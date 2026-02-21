@@ -5,7 +5,7 @@
 
 struct datos
 {
-    char escuela[40];
+    //char escuela[40];
     int legajo;
     int year;
     char nombre [30];
@@ -18,12 +18,10 @@ struct datos
     int datosCargados;// flag para saber si guardarlo o no en el txt.
 };
 
-
-int menu (int ingreso );//menu del programa
 void cargarDatos( struct datos *alumno, int cantidad);//guarda los datos en el struct alumno
-void cargarNotas(struct datos *alumno);
+void cargarNotas(struct datos *alumno);// completa los datos faltantes(notas y promedio) del alumno.
 
-void guardarAlumnoTXT( struct datos *alumno);//lo que se carga en el struct datos, lño escrive en un archivo de texto CSV
+void guardarAlumnoTXT( struct datos *alumno);//lo que se carga en el struct datos, lo escribe en un archivo de texto con formato CSV
 
 void salir(struct datos *alumno, int cantidad);//recorre todo el struct cargado para verficar si: 1 el alumno fue cargado
 
@@ -50,7 +48,7 @@ int main (){ //MAIN PRINCIPAL
         }
 
         switch(op) {
-        case 1:// Carga de alumno:
+        case 1:// Carga de alumno: !!Ojo aca deberia haber una validacion/lectura del archivo de txt para ver si lo que ingresa no esta ya ingresado no?
                 printf("ingreso de datos del alumno-\n");
                 printf("\nCantidad de alumnos a ingresar: ");
                 scanf("%d",&cantidad);
@@ -62,7 +60,7 @@ int main (){ //MAIN PRINCIPAL
                 cargarDatos(alumno,cantidad);//1ra opcion carga de datos
                 valido = 1;
             break;
-        case 2:
+        case 2:// Buscar alumnos | Mostrar registros
             if(valido){
                 printf("\n||REGISTROS||\n");
                 printf("\n1.Mostrar Alumnos ");
@@ -71,9 +69,12 @@ int main (){ //MAIN PRINCIPAL
                 if(valido == 1){
                     //mostrarAlumno()
                 }if(valido == 2){
-                    buscarAlumno(alumno,cantidad);
+                    salir(alumno,cantidad);
                 }
             }
+            break;
+        case 3: //Editar datos del alumno. | Eliminar Alumno. | Editar registros
+
             break;
         case 4:
 
@@ -95,7 +96,7 @@ int main (){ //MAIN PRINCIPAL
         }
     }
     while(op!= 4);
-
+    free(alumno);
 return 0;
 }
 
@@ -154,7 +155,7 @@ void cargarNotas(struct datos *alumno){
 }
 void guardarAlumnoTXT(struct datos *alumno){//debe usarse al final solo cuando todos lo datos esten cargados(tengo que aprender a editar txt)
 
-    FILE *archivo = fopen("alumnos.txt","a");
+    FILE *archivo = fopen("alumnos.txt","w");
     if(archivo == NULL){
         printf("Error al abrir el archivo\n");
         return;
@@ -163,41 +164,42 @@ void guardarAlumnoTXT(struct datos *alumno){//debe usarse al final solo cuando t
     fclose (archivo);
 }
 
-void salir(struct datos *alumno, int cantidad){//funcion clave para recorrer el struct cargado. y saber si hay alumnos incompletos...
+void salir(struct datos *alumno, int cantidad){// recorre el struct cargado. para si hay alumnos incompletos...
     system("cls");
     int op=0;
     printf("\n||CIERRE DE PROGRAMA- GUARDADO DE REGISTROS ||");
-    for(int i=0; i<cantidad; i++) {
+    for(int i=0; i<cantidad; i++) { //salir detecta datos incompletos y le pregunta al usuario que quiere hacer con eso...
             if(alumno[i].datosCargados == 0){
                 printf("Alumno legajo: Nro %d \n Faltan datos, desea cargarlos? (1.Si|2.No)",alumno[i].legajo +1);
                 scanf("%d",&op);
-                if(op == 1){//el usuario decide completar los datos del alumno
+                if(op == 1){// si decide completar los datos del alumno
                     cargarNotas(&alumno[i]);
-                    guardarAlumnoTXT(&alumno[i]);//guardar todo en el archivo.
-                }if(op == 2){//el usuario decide NO completar los datos del alumno.
+                }if(op == 2){// si decide NO completar los datos del alumno.
                     printf("\nNo se agregaron los datos faltantes, para agregarlos mas tarde vaya a la opcion (3)'Editar alumno'.");
-                }if(alumno[i].datosCargados ==1){//si esta completo se guarda en el archivo.
-                    guardarAlumnoTXT(&alumno[i]);
                 }
             }
     }
-    //salir detecta problemas y le pregunta al user que quiere hacer con eso...
+    for(int i=0; i<cantidad; i++) {
+         if(alumno[i].datosCargados ==1){//si esta completo se guarda en el archivo.
+          guardarAlumnoTXT(&alumno[i]);//guardar todo en el archivo.
+         }
+    }
 }
 
 
-//voy a hacer esto solo.
-/*¿Un alumno incompleto puede existir en memoria? si, osea que puede estar incompleto pero solo mientras no se lo guarda, si se lo guarda debe completarse
 
-¿Un alumno incompleto puede existir en el archivo? NO... solo se toca el archivo de texto cuando  ya esta completo el struct.
-
-¿El archivo se escribe muchas veces o una sola vez? por el momento 1 sola vez. al finalizar el programa guarda todo...carga de datos + ediciones
-
-¿Quién tiene la última palabra: el usuario o el programa? en definitiva, el programa, el usuario solo se adapta a las reglas no?
+/* (19/2-26): correcciones a hacer>
+            1 corregir datos duplicados-
+            2 Liberar memoria antes de terminar el programa
+            3 Corregir fuga de memoria
+            4 Mostrar alumnos
+            5 Buscar alumnos
 */
-///TArea para Mañana:  definir las 3 reglas del programa y Hacer validacion usando CargarDatos como flag.
-// 1. Un alumno solo se guarda en archivo cuando está completo
-//2. un alumno esta completo cuando datosCargados vale 1
-//3.
+
+/// 1. Un alumno solo se guarda en archivo cuando está completo
+/// 2. un alumno esta completo cuando datosCargados vale 1
+
+//voy a hacer esto solo.
 /*(25-01-26) NT: agregar una opcion que permita preguntar a que escuela quiere guardar
     el alumno.ej naciones, n·38 etc y guarde esos datos enla escuela... agregar una opcion que
     permita tambien "mover"esos datos de una escuela a otra y permita eliminarlo de su anterior escuela
