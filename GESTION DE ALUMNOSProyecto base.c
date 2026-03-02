@@ -3,7 +3,7 @@
 #include <string.h>
 
 
-struct datos
+struct datos //Definicion de estructura para datos del alumno-
 {
     //char escuela[40];
     int legajo;
@@ -18,16 +18,21 @@ struct datos
     int datosCargados;// flag para saber si guardarlo o no en el txt.
 };
 
+//Persistencia (archivo):
+struct datos* cargarDesdeArchivo(int *cantidad);
+void guardarAlumnoTXT( struct datos *alumno);//lo que se carga en el struct datos, lo escribe en un archivo de texto con formato CSV
+void salir(struct datos *alumno, int cantidad);//recorre todo el struct cargado para verficar si: 1 el alumno fue cargado
+
+//Sistema (Lógica del programa):
 void cargarDatos( struct datos *alumno, int cantidad);//guarda los datos en el struct alumno
 void cargarNotas(struct datos *alumno);// completa los datos faltantes(notas y promedio) del alumno.
 
-void guardarAlumnoTXT( struct datos *alumno);//lo que se carga en el struct datos, lo escribe en un archivo de texto con formato CSV
-
-void salir(struct datos *alumno, int cantidad);//recorre todo el struct cargado para verficar si: 1 el alumno fue cargado
+//Interfaz (visualizacion del programa):
 
 int main (){ //MAIN PRINCIPAL
-    struct datos *alumno =NULL; //puntero a struct
-    int cantidad= 0;
+        int cantidad= 0;
+        struct datos *alumno = cargarDesdeArchivo(&cantidad);
+
     int op=0;
     int valido = 0, opSalir = 0;
 
@@ -99,7 +104,50 @@ int main (){ //MAIN PRINCIPAL
     free(alumno);
 return 0;
 }
+struct datos *alumno cargarDesdeArchivo( int *cantidad){//cargar desde archivo de texto, recibe por parametro cantidad para saber cuanto
+    FILE *archivo = fopen("alumnos.txt","r");//Esta es la funcion para 'abrir' archivos.
+    int contador= 0;//para contar si hay alumnos en el archivo con el while
+    struct datos aux;
 
+    if(archivo==NULL){//validacion de que se pudo abrir el archivo.
+        printf("\n Datos no cargados. ingrese registros_ ");
+        *cantidad= 0;// no hay alumnos
+        return NULL;//no hay memoria
+    }else{
+           //lee linea por linea (9) , es como un printf inverso y va contando alumnos hasta llegar a 9 datos por linea. si hay 10 datos no los va a leer
+            while (fscanf(archivo,"%d %d %s %s %f %f %f %f %d",
+              &aux.legajo,
+              &aux.year,
+              aux.nombre,
+              aux.curso,
+              &aux.nota1,
+              &aux.nota2,
+              &aux.nota3,
+              &aux.promedio,
+              &aux.estado) == 9) {
+                contador++;
+            }
+       rewind(archivo);//"rebobina" hasta el principio y te pocisiona al principio del archivo
+       struct datos *alumnos = malloc(sizeof(struct datos) * contador);
+       for (int i = 0; i < contador; i++) {
+
+    fscanf(archivo,"%d %d %s %s %f %f %f %f %d",
+           &alumnos[i].legajo,
+           &alumnos[i].year,
+           alumnos[i].nombre,
+           alumnos[i].curso,
+           &alumnos[i].nota1,
+           &alumnos[i].nota2,
+           &alumnos[i].nota3,
+           &alumnos[i].promedio,
+           &alumnos[i].estado);
+    }
+    }
+
+*cantidad = contador;
+fclose(archivo);
+return alumnos;
+}
 
 void cargarDatos(struct datos *alumno, int cantidad)// Carga los datos básicos del alumno, el usuario elige si desea cargar o no las notas en ese momento.
 {
@@ -187,7 +235,7 @@ void salir(struct datos *alumno, int cantidad){// recorre el struct cargado. par
 }
 
 
-
+//(23-2-26):Ok, esto se está complejisando...pucha
 /* (19/2-26): correcciones a hacer>
             1 corregir datos duplicados-
             2 Liberar memoria antes de terminar el programa
