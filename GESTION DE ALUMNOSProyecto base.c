@@ -72,7 +72,7 @@ int main (){ //MAIN PRINCIPAL
                 printf("\n2.Buscar Alumnos");
                 scanf("%d",&valido);
                 if(valido == 1){
-                    //mostrarAlumno()
+                    mostrarAlumnos(alumno,cantidad);
                 }if(valido == 2){
                     salir(alumno,cantidad);
                 }
@@ -210,6 +210,21 @@ void cargarNotas(struct datos *alumno){
         }
         alumno->datosCargados = 1;//alumno completo una vez que se cargan las notas
 }
+void mostrarAlumnos(struct datos *alumno, int cantidad){
+    printf("%-10s %-10s %-15s %-10s %-8s %-8s %-8s %-10s %-10s\n",
+           "AÑO", "LEGAJO","NOMBRE","CURSO","NOTA1","NOTA2","NOTA3","PROMEDIO","ESTADO");
+    for(int i=0; i<cantidad; i++){
+           printf( "%-10d %-10s %-15s %-8.2f %-8.2f %-8.2f %-8.2f %-10s \n",alumno[i].legajo,
+                   alumno[i].year,
+                   alumno[i].nombre,
+                   alumno[i].curso,
+                   alumno[i].nota1,
+                   alumno[i].nota2,
+                   alumno[i].nota3,
+                   alumno[i].promedio,
+                   alumno[i].estado ==1 ? "APROBADO" : "DESAPROBADO");
+    }
+}
 
 void guardarTodosTXT(struct datos *alumno, int cantidad){
 
@@ -253,6 +268,7 @@ void salir(struct datos *alumno, int cantidad){// recorre el struct cargado. par
 
 }
 
+//(5)>nt: agregar funcion 2 'mostrar' (6)> terminar de cargar las notas al salir del programa.por que si sale de la op 1 termina el programa.
 
 //(23-2-26):Ok, esto se está complejisando...pucha
 /* (19/2-26): correcciones a hacer>
