@@ -19,6 +19,7 @@ struct datos //Definicion de estructura para datos del alumno-
 };
 
 //Persistencia (archivo):
+void guardarTodosTXT(struct datos *alumno, int cantidad);//recorre todo el struct dinamico y lo guarda en un archivo de texto.
 struct datos* cargarDesdeArchivo(int *cantidad);
 void guardarAlumnoTXT( struct datos *alumno);//lo que se carga en el struct datos, lo escribe en un archivo de texto con formato CSV
 void salir(struct datos *alumno, int cantidad);//recorre todo el struct cargado para verficar si: 1 el alumno fue cargado
@@ -57,7 +58,6 @@ int main (){ //MAIN PRINCIPAL
                 printf("ingreso de datos del alumno-\n");
                 printf("\nCantidad de alumnos a ingresar: ");
                 scanf("%d",&cantidad);
-                alumno=malloc(sizeof(struct datos) * cantidad); //malloc + el peso de un struct, cantidad es cuantos struct va a usar
                 if(alumno == NULL){//validacion de memoria asignada
                     printf("\nError al asignar memoria.\n");
                     return 1;
@@ -104,18 +104,19 @@ int main (){ //MAIN PRINCIPAL
     free(alumno);
 return 0;
 }
-struct datos *alumno cargarDesdeArchivo( int *cantidad){//cargar desde archivo de texto, recibe por parametro cantidad para saber cuanto
+struct datos *cargarDesdeArchivo( int *cantidad){//cargar desde archivo de texto, recibe por parametro cantidad para saber cuanto
     FILE *archivo = fopen("alumnos.txt","r");//Esta es la funcion para 'abrir' archivos.
     int contador= 0;//para contar si hay alumnos en el archivo con el while
-    struct datos aux;
+    struct datos aux;//para contar en el archivo
+    struct datos *alumnos= NULL;//para guardarlo en memoria
 
     if(archivo==NULL){//validacion de que se pudo abrir el archivo.
         printf("\n Datos no cargados. ingrese registros_ ");
-        *cantidad= 0;// no hay alumnos
+        *cantidad= 0;// no hay alumnos aasi q le aavisa a main que la cantidad encontrada fue 0
         return NULL;//no hay memoria
     }else{
            //lee linea por linea (9) , es como un printf inverso y va contando alumnos hasta llegar a 9 datos por linea. si hay 10 datos no los va a leer
-            while (fscanf(archivo,"%d %d %s %s %f %f %f %f %d",
+            while (fscanf(archivo,"%d;%d;%s;%s;%f;%f;%f;%f;%d",
               &aux.legajo,
               &aux.year,
               aux.nombre,
@@ -127,26 +128,34 @@ struct datos *alumno cargarDesdeArchivo( int *cantidad){//cargar desde archivo d
               &aux.estado) == 9) {
                 contador++;
             }
-       rewind(archivo);//"rebobina" hasta el principio y te pocisiona al principio del archivo
-       struct datos *alumnos = malloc(sizeof(struct datos) * contador);
-       for (int i = 0; i < contador; i++) {
+            rewind(archivo);//"rebobina" hasta el principio y te pocisiona al principio del archivo
+    //malloc + el peso de un struct, cantidad es cuantos struct va a usar
+            alumnos= malloc(sizeof(struct datos) * contador);//listo aca estaria usando el struct declarado afuera del else
+           if(alumnos==NULL){
+                fclose(archivo);
+                *cantidad=0;
+                return NULL;
+           }
+           for (int i = 0; i < contador; i++) {
+//bug 4: Nt: Si, es que la idea es cargar los datos en memoria para poder trabajar con ellos, lo que persiste despues en el archivo de texto mi idea es dejarlo asentado con un fomato CSV para poder el dia de mañana leerlo con otro programa (yo que se un excel por ej) esta bien? vos que pensas?
 
-    fscanf(archivo,"%d %d %s %s %f %f %f %f %d",
-           &alumnos[i].legajo,
-           &alumnos[i].year,
-           alumnos[i].nombre,
-           alumnos[i].curso,
-           &alumnos[i].nota1,
-           &alumnos[i].nota2,
-           &alumnos[i].nota3,
-           &alumnos[i].promedio,
-           &alumnos[i].estado);
-    }
+               fscanf(archivo,"%d;%d;%s;%s;%f;%f;%f;%f;%d",
+               &alumnos[i].legajo,
+               &alumnos[i].year,
+               alumnos[i].nombre,
+               alumnos[i].curso,
+               &alumnos[i].nota1,
+               &alumnos[i].nota2,
+               &alumnos[i].nota3,
+               &alumnos[i].promedio,
+               &alumnos[i].estado);
+               alumnos[i].datosCargados = 1;//Seteo de datos cargados  para que no quede basura en memoria, esta bien no?
+          }
     }
 
 *cantidad = contador;
 fclose(archivo);
-return alumnos;
+return alumnos;//y aca ya estaria devolviendo el el struct afectado con malloc.. verdad?
 }
 
 void cargarDatos(struct datos *alumno, int cantidad)// Carga los datos básicos del alumno, el usuario elige si desea cargar o no las notas en ese momento.
@@ -201,17 +210,29 @@ void cargarNotas(struct datos *alumno){
         }
         alumno->datosCargados = 1;//alumno completo una vez que se cargan las notas
 }
-void guardarAlumnoTXT(struct datos *alumno){//debe usarse al final solo cuando todos lo datos esten cargados(tengo que aprender a editar txt)
+
+void guardarTodosTXT(struct datos *alumno, int cantidad){
 
     FILE *archivo = fopen("alumnos.txt","w");
     if(archivo == NULL){
         printf("Error al abrir el archivo\n");
         return;
     }
-    fprintf(archivo, "%d;%s;%s;%.2f;%.2f;%.2f;%.2f;%d\n", alumno->legajo,alumno->nombre,alumno->curso,alumno->nota1,alumno->nota2,alumno->nota3,alumno->promedio,alumno->estado);
+    for(int i= 0;i<cantidad; i++){
+        if(alumno[i].datosCargados == 1){
+            fprintf(archivo, "%d;%d;%s;%s;%.2f;%.2f;%.2f;%.2f;%d\n", alumno[i].legajo,
+               alumno[i].year,
+               alumno[i].nombre,
+               alumno[i].curso,
+               alumno[i].nota1,
+               alumno[i].nota2,
+               alumno[i].nota3,
+               alumno[i].promedio,
+               alumno[i].estado);
+        }
+    }
     fclose (archivo);
 }
-
 void salir(struct datos *alumno, int cantidad){// recorre el struct cargado. para si hay alumnos incompletos...
     system("cls");
     int op=0;
@@ -226,12 +247,10 @@ void salir(struct datos *alumno, int cantidad){// recorre el struct cargado. par
                     printf("\nNo se agregaron los datos faltantes, para agregarlos mas tarde vaya a la opcion (3)'Editar alumno'.");
                 }
             }
+
     }
-    for(int i=0; i<cantidad; i++) {
-         if(alumno[i].datosCargados ==1){//si esta completo se guarda en el archivo.
-          guardarAlumnoTXT(&alumno[i]);//guardar todo en el archivo.
-         }
-    }
+    guardarTodosTXT(alumno,cantidad);
+
 }
 
 
