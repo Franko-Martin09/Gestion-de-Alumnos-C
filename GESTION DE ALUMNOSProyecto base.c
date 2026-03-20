@@ -20,14 +20,13 @@ struct datos //Definicion de estructura para datos del alumno-
 
 //Persistencia (archivo):
 void guardarTodosTXT(struct datos *alumno, int cantidad);//recorre todo el struct dinamico y lo guarda en un archivo de texto.
-struct datos* cargarDesdeArchivo(int *cantidad);
-void guardarAlumnoTXT( struct datos *alumno);//lo que se carga en el struct datos, lo escribe en un archivo de texto con formato CSV
-void salir(struct datos *alumno, int cantidad);//recorre todo el struct cargado para verficar si: 1 el alumno fue cargado
+struct datos* cargarDesdeArchivo(int *cantidad);//carga en memoria el archivo de texto
 
 //Sistema (Lógica del programa):
 void cargarDatos( struct datos *alumno, int cantidad);//guarda los datos en el struct alumno
 void cargarNotas(struct datos *alumno);// completa los datos faltantes(notas y promedio) del alumno.
-
+void salir(struct datos *alumno, int cantidad);//recorre todo el struct cargado para verficar si: 1 el alumno fue cargado
+void mostrarAlumnos(struct datos *alumno, int cantidad);
 //Interfaz (visualizacion del programa):
 
 int main (){ //MAIN PRINCIPAL
@@ -36,6 +35,7 @@ int main (){ //MAIN PRINCIPAL
 
     int op=0;
     int valido = 0, opSalir = 0;
+    int nuevos;
 
     printf("\t___GESTION DE ALUMNOS___\n\t     <Bienvenido>\n");
     do //Menu:
@@ -54,15 +54,19 @@ int main (){ //MAIN PRINCIPAL
         }
 
         switch(op) {
-        case 1:// Carga de alumno: !!Ojo aca deberia haber una validacion/lectura del archivo de txt para ver si lo que ingresa no esta ya ingresado no?
+        case 1:
                 printf("ingreso de datos del alumno-\n");
                 printf("\nCantidad de alumnos a ingresar: ");
-                scanf("%d",&cantidad);
-                if(alumno == NULL){//validacion de memoria asignada
+                scanf("%d",&nuevos);//agrega espacio para nuevos alumnos en caso de exitir ingresos anteriores
+
+                struct datos *temp = realloc(alumno, sizeof(struct datos)* (cantidad + nuevos));
+                if(temp == NULL){//validacion
                     printf("\nError al asignar memoria.\n");
-                    return 1;
+                    break;
                 }
-                cargarDatos(alumno,cantidad);//1ra opcion carga de datos
+                alumno = temp;
+                cargarDatos(alumno + cantidad, nuevos);//1ra opcion carga de datos
+                cantidad += nuevos;
                 valido = 1;
             break;
         case 2:// Buscar alumnos | Mostrar registros
@@ -82,20 +86,28 @@ int main (){ //MAIN PRINCIPAL
 
             break;
         case 4:
-
+            int hayIncompletos = 0;
+            //verifica si hay algun registro incompleto
             for(int i =0;i<cantidad; i++){//for para recorrer y buscar
                 if (alumno[i].datosCargados == 0){
-                    printf("\nHay alumnos sin cargar datos desea salir sin guardar cambios? \n(1.Si/2.No) : ");
-                    printf("\n ¡¡Se perderan todos los alumnos que no hayan sido completados!!");
-                    scanf("%d",&opSalir);
-                    if(opSalir == 1){
-                        salir(alumno,cantidad);
-                    }else{
+                    hayIncompletos =1;
+                    break;
+                }
+            }
+            if(hayIncompletos){
+                printf("/nHay alumnos sin completar./n¿Desea completarlos antes de salir?");
+                printf("\n1. Sí\n2. No (salir igual)\n3. Cancelar salida\n");
+                scanf("%d",&opSalir);
+
+                if(opSalir == 1){
+                    salir(alumno,cantidad); //completa y guarda
+
+                }else{
                         printf("\nGuardando registros y cerrando el programa...");
                         printf("\n\t >>Presione 'Enter' para cerrar esta ventana<<");
                     }
-                }
             }
+
             break;
 
         }
@@ -112,7 +124,7 @@ struct datos *cargarDesdeArchivo( int *cantidad){//cargar desde archivo de texto
 
     if(archivo==NULL){//validacion de que se pudo abrir el archivo.
         printf("\n Datos no cargados. ingrese registros_ ");
-        *cantidad= 0;// no hay alumnos aasi q le aavisa a main que la cantidad encontrada fue 0
+        *cantidad= 0;// no hay alumnos asi q le avisa a main que la cantidad encontrada fue 0
         return NULL;//no hay memoria
     }else{
            //lee linea por linea (9) , es como un printf inverso y va contando alumnos hasta llegar a 9 datos por linea. si hay 10 datos no los va a leer
@@ -137,8 +149,6 @@ struct datos *cargarDesdeArchivo( int *cantidad){//cargar desde archivo de texto
                 return NULL;
            }
            for (int i = 0; i < contador; i++) {
-//bug 4: Nt: Si, es que la idea es cargar los datos en memoria para poder trabajar con ellos, lo que persiste despues en el archivo de texto mi idea es dejarlo asentado con un fomato CSV para poder el dia de mañana leerlo con otro programa (yo que se un excel por ej) esta bien? vos que pensas?
-
                fscanf(archivo,"%d;%d;%s;%s;%f;%f;%f;%f;%d",
                &alumnos[i].legajo,
                &alumnos[i].year,
@@ -149,13 +159,13 @@ struct datos *cargarDesdeArchivo( int *cantidad){//cargar desde archivo de texto
                &alumnos[i].nota3,
                &alumnos[i].promedio,
                &alumnos[i].estado);
-               alumnos[i].datosCargados = 1;//Seteo de datos cargados  para que no quede basura en memoria, esta bien no?
+               alumnos[i].datosCargados = 1;//Seteo de datos cargados  para que no quede basura en memoria
           }
     }
 
 *cantidad = contador;
 fclose(archivo);
-return alumnos;//y aca ya estaria devolviendo el el struct afectado con malloc.. verdad?
+return alumnos;//devuelve el struct afectado con malloc.
 }
 
 void cargarDatos(struct datos *alumno, int cantidad)// Carga los datos básicos del alumno, el usuario elige si desea cargar o no las notas en ese momento.
@@ -214,8 +224,9 @@ void mostrarAlumnos(struct datos *alumno, int cantidad){
     printf("%-10s %-10s %-15s %-10s %-8s %-8s %-8s %-10s %-10s\n",
            "AÑO", "LEGAJO","NOMBRE","CURSO","NOTA1","NOTA2","NOTA3","PROMEDIO","ESTADO");
     for(int i=0; i<cantidad; i++){
-           printf( "%-10d %-10s %-15s %-8.2f %-8.2f %-8.2f %-8.2f %-10s \n",alumno[i].legajo,
-                   alumno[i].year,
+           printf( "%-10d %-10d %-10s %-15s %-8.2f %-8.2f %-8.2f %-8.2f %-10s \n",
+                  alumno[i].year,
+                   alumno[i].legajo,
                    alumno[i].nombre,
                    alumno[i].curso,
                    alumno[i].nota1,
